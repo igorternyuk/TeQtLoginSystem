@@ -20,7 +20,56 @@ Dialog::~Dialog()
 
 void Dialog::on_buttonBox_accepted()
 {
+    LoginType loginType;
+    if(ui->radioBtnRegularUser->isChecked())
+    {
+        QSqlQuery query;
+        User user(-1, ui->lineEditUsername->text(),
+                  ui->lineEditUserPassword->text());
+        QString cmd = QString("SELECT count(*) from user WHERE"
+                              " name LIKE '%1' AND password LIKE '%2'")
+                .arg(user.name()).arg(user.password());
+        query.exec(cmd);
+        query.next();
+        const int count = query.value(0).toInt();
+        if(count == 0)
+        {
+            QMessageBox::warning(this, "Authentication error",
+                                 "Incorrect username or password");
+            return;
+        }
+        loginType = LoginType::RegularUser;
+    }
+    else if(ui->radioBtnAdministrator->isChecked())
+    {
+        QSqlQuery query;
+        Admin admin(-1, ui->lineEditUsername->text(),
+                    ui->lineEditUserPassword->text());
+        QString cmd = QString("SELECT count(*) from admin WHERE"
+                              " name LIKE '%1' AND password LIKE '%2'")
+                .arg(admin.name()).arg(admin.password());
+        query.exec(cmd);
+        query.next();
+        const int adminCount = query.value(0).toInt();
+        if(adminCount == 0)
+        {
+            QMessageBox::warning(this, "Authentication error",
+                                 "Incorrect username or password");
+            return;
+        }
+        loginType = LoginType::Administrator;
+    }
 
+    if(loginType == LoginType::RegularUser)
+    {
+        QMessageBox::information(this, "Success",
+                                 "You have entered as regular user");
+    }
+    else if(loginType == LoginType::Administrator)
+    {
+        QMessageBox::information(this, "Success",
+                                 "You have entered as administrator");
+    }
 }
 
 void Dialog::on_buttonBox_rejected()

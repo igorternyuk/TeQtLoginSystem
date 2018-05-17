@@ -22,6 +22,11 @@ private slots:
     void on_btnRegisterAdmin_clicked();
 
 private:
+    enum class LoginType
+    {
+        RegularUser,
+        Administrator
+    };
     Ui::Dialog *ui;
     void checkIfAdminExists();
 };
