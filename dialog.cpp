@@ -3,6 +3,7 @@
 #include "registerAdminDialog.hpp"
 #include <QSqlQuery>
 #include <QMessageBox>
+#include <QDebug>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -10,6 +11,10 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->lineEditUserPassword->setEchoMode(QLineEdit::Password);
+
+    mCipher.loadPublicKeyByteArrayFromFile("public.pem");
+    mCipher.loadPrivateKeyByteArrayFromFile("private.pem");
+
     checkIfAdminExists();
 }
 
@@ -20,7 +25,7 @@ Dialog::~Dialog()
 
 void Dialog::on_buttonBox_accepted()
 {
-    LoginType loginType;
+
     if(ui->radioBtnRegularUser->isChecked())
     {
         QSqlQuery query;
@@ -36,9 +41,10 @@ void Dialog::on_buttonBox_accepted()
         {
             QMessageBox::warning(this, "Authentication error",
                                  "Incorrect username or password");
+            reject();
             return;
         }
-        loginType = LoginType::RegularUser;
+        mLoginType = LoginType::RegularUser;
     }
     else if(ui->radioBtnAdministrator->isChecked())
     {
@@ -55,40 +61,50 @@ void Dialog::on_buttonBox_accepted()
         {
             QMessageBox::warning(this, "Authentication error",
                                  "Incorrect username or password");
+            reject();
             return;
         }
-        loginType = LoginType::Administrator;
+        mLoginType = LoginType::Administrator;
     }
 
-    if(loginType == LoginType::RegularUser)
+    if(mLoginType == LoginType::RegularUser)
     {
         QMessageBox::information(this, "Success",
                                  "You have entered as regular user");
     }
-    else if(loginType == LoginType::Administrator)
+    else if(mLoginType == LoginType::Administrator)
     {
         QMessageBox::information(this, "Success",
                                  "You have entered as administrator");
     }
+    accept();
 }
 
 void Dialog::on_buttonBox_rejected()
 {
-    close();
+    reject();
 }
 
 void Dialog::on_btnRegisterAdmin_clicked()
 {
+    qDebug() << "Registering the new admin";
     RegisterAdminDialog dialog;
     if(dialog.exec() == RegisterAdminDialog::Accepted)
     {
+        qDebug() << "Accepted";
         Admin admin = dialog.admin();
         QSqlQuery query;
-        QString cmd = QString("INSERT INTO admin ('%1', '%2')")
+        QString cmd = QString("INSERT INTO admin (1,'%1', '%2');")
                 .arg(admin.name()).arg(admin.password());
+        qDebug() << cmd;
         query.exec(cmd);
         checkIfAdminExists();
     }
+}
+
+Dialog::LoginType Dialog::getLoginType() const
+{
+    return mLoginType;
 }
 
 void Dialog::checkIfAdminExists()
@@ -97,5 +113,15 @@ void Dialog::checkIfAdminExists()
     query.exec("SELECT count(*) from admin");
     query.next();
     const int adminCount = query.value(0).toInt();
-    ui->btnRegisterAdmin->setEnabled(adminCount == 0);
+    qDebug() << "Checking if admin already exists";
+    qDebug() << "adminCount " << adminCount;
+    if(adminCount != 0)
+    {
+        ui->btnRegisterAdmin->setEnabled(false);
+    }
+    else
+    {
+        ui->btnRegisterAdmin->setEnabled(true);
+    }
+
 }

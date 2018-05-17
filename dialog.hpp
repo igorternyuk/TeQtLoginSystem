@@ -2,6 +2,7 @@
 #define DIALOG_HPP
 
 #include <QDialog>
+#include "tecipher.hpp"
 
 namespace Ui
 {
@@ -13,8 +14,15 @@ class Dialog : public QDialog
     Q_OBJECT
 
 public:
+    enum class LoginType
+    {
+        RegularUser,
+        Administrator
+    };
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
+
+    LoginType getLoginType() const;
 
 private slots:
     void on_buttonBox_accepted();
@@ -22,12 +30,10 @@ private slots:
     void on_btnRegisterAdmin_clicked();
 
 private:
-    enum class LoginType
-    {
-        RegularUser,
-        Administrator
-    };
+
     Ui::Dialog *ui;
+    TeCipher mCipher;
+    LoginType mLoginType;
     void checkIfAdminExists();
 };
 

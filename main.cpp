@@ -1,4 +1,5 @@
 #include "dialog.hpp"
+#include "mainwindow.hpp"
 #include <QApplication>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -7,11 +8,9 @@
 
 #define DB_DRIVER "QSQLITE"
 #define DB_NAME "./data.db"
-#define SQL_CREATE_USER_TABLE "CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY NOT NULL,"\
-                              " name TEXT NOT NUL UNIQUE, password TEXT NOT NULL);"
+#define SQL_CREATE_USER_TABLE "CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL UNIQUE, password TEXT NOT NULL);"
 
-#define SQL_CREATE_ADMIN_TABLE "CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY NOT NULL,"\
-                              " name TEXT NOT NULL UNIQUE, password TEXT NOT NULL);"
+#define SQL_CREATE_ADMIN_TABLE "CREATE TABLE IF NOT EXISTS admin (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL UNIQUE, password TEXT NOT NULL);"
 
 int createDatabase()
 {
@@ -65,8 +64,15 @@ int main(int argc, char *argv[])
     }
 
     app.setStyle("fusion");
-    Dialog w;
-    w.show();
+    Dialog loginDialog;
+
+    if(loginDialog.exec() == Dialog::Rejected)
+    {
+        return 0;
+    }
+
+    MainWindow window(loginDialog.getLoginType());
+    window.show();
 
     return app.exec();
 }

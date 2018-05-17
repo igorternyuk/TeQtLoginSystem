@@ -24,14 +24,17 @@ SOURCES += main.cpp\
     registerAdminDialog.cpp \
     user.cpp \
     admin.cpp \
-    dbmanager.cpp
+    dbmanager.cpp \
+    mainwindow.cpp
 
 HEADERS  += dialog.hpp \
     tecipher.hpp \
     registerAdminDialog.hpp \
     user.hpp \
     admin.hpp \
-    dbmanager.hpp
+    dbmanager.hpp \
+    mainwindow.hpp
 
 FORMS    += dialog.ui \
-    registerAdminDialog.ui
+    registerAdminDialog.ui \
+    mainwindow.ui
