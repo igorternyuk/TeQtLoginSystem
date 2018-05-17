@@ -16,8 +16,14 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
+private slots:
+    void on_buttonBox_accepted();
+    void on_buttonBox_rejected();
+    void on_btnRegisterAdmin_clicked();
+
 private:
     Ui::Dialog *ui;
+    void checkIfAdminExists();
 };
 
 #endif // DIALOG_HPP
