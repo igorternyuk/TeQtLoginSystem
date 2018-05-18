@@ -20,7 +20,7 @@ public:
         RegularUser,
         Administrator
     };
-    explicit LoginDialog(DbManager manager, QWidget *parent = nullptr);
+    explicit LoginDialog(DbManager &manager, QWidget *parent = nullptr);
     ~LoginDialog();
 
     LoginType getLoginType() const;
@@ -36,8 +36,7 @@ private slots:
 private:
     Ui::Dialog *ui;
     LoginType mLoginType;
-    DbManager mDbManager;
-    //const QString mPassword = "Parol Na Gorshke Sidel Korol";
+    DbManager &mDbManager;
     void checkIfAdminExists();
 };
 

@@ -4,9 +4,12 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 
-MainWindow::MainWindow(LoginDialog::LoginType loginType, QWidget *parent)
+MainWindow::MainWindow(DbManager &manager,
+                       LoginDialog::LoginType loginType,
+                       QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , mDbManager(manager)
 {
     ui->setupUi(this);
     if(loginType == LoginDialog::LoginType::Administrator)
@@ -27,7 +30,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionUser_database_triggered()
 {
-    UserManagmentForm *form = new UserManagmentForm(this);
+    UserManagmentForm *form = new UserManagmentForm(mDbManager, this);
     auto subWindow = ui->mdiArea->addSubWindow(form);
     subWindow->setGeometry(form->geometry());
     subWindow->setWindowTitle(form->windowTitle());
@@ -42,7 +45,6 @@ void MainWindow::on_actionQuit_triggered()
     if(reply == QMessageBox::Yes)
     {
         this->close();
-        //qApp->quit();
     }
 }
 

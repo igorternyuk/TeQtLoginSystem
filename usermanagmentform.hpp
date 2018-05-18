@@ -2,6 +2,7 @@
 #define USERMANAGMENTFORM_HPP
 
 #include <QWidget>
+#include "dbmanager.hpp"
 
 namespace Ui
 {
@@ -15,7 +16,8 @@ class UserManagmentForm : public QWidget
     Q_OBJECT
 
 public:
-    explicit UserManagmentForm(QWidget *parent = nullptr);
+    explicit UserManagmentForm(DbManager& manager,
+                               QWidget *parent = nullptr);
     ~UserManagmentForm();
 
 private slots:
@@ -29,6 +31,7 @@ private slots:
 
 private:
     Ui::UserManagmentForm *ui;
+    DbManager& mDbManager;
     QSqlTableModel *mModelUser;
     QSqlTableModel *mModelAdmin;
 };

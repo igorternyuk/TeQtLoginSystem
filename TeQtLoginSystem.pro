@@ -21,7 +21,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
     tecipher.cpp \
     user.cpp \
-    admin.cpp \
     dbmanager.cpp \
     mainwindow.cpp \
     usermanagmentform.cpp \
@@ -31,7 +30,6 @@ SOURCES += main.cpp\
 HEADERS  += \
     tecipher.hpp \
     user.hpp \
-    admin.hpp \
     dbmanager.hpp \
     mainwindow.hpp \
     usermanagmentform.hpp \

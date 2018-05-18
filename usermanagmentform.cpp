@@ -7,13 +7,16 @@
 #include <QSqlTableModel>
 #include <QSqlQuery>
 #include <QSqlError>
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 #define PASSWORD_COLUMN 2
 
-UserManagmentForm::UserManagmentForm(QWidget *parent) :
+UserManagmentForm::UserManagmentForm(DbManager &manager, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::UserManagmentForm)
+    ui(new Ui::UserManagmentForm),
+    mDbManager(manager)
 {
     ui->setupUi(this);
     mModelUser = new QSqlTableModel(this);
@@ -48,26 +51,20 @@ void UserManagmentForm::on_btnRegister_clicked()
     RegisterUserDialog dialog;
     if(dialog.exec() == RegisterUserDialog::Accepted)
     {
-        qDebug() << "Accepted";
         User user = dialog.getUser();
         QString userpassword = user.password();
         QString encryptedPassword = LoginDialog::encrypt(userpassword);
-        QSqlQuery query;
-        QString cmd = QString("INSERT INTO %1 (name, password) VALUES('%2', '%3');")
-                .arg(dialog.getIsAdminCheckBox()->isChecked()
-                     ? "admin" : "user")
-                .arg(user.name())
-                .arg(encryptedPassword);
-        qDebug() << cmd;
-        if(query.exec(cmd))
+        user.setPassword(encryptedPassword);
+        if(mDbManager.insertUser(user))
         {
             mModelUser->select();
             mModelAdmin->select();
-            QMessageBox::information(this, "Success", "Register was successfully added");
+            QMessageBox::information(this, "Success",
+                                     "Register was successfully added");
         }
         else
         {
-            QMessageBox::critical(this, "Error", query.lastError().text());
+            QMessageBox::critical(this, "Error", mDbManager.getLastError());
         }
     }
 }
@@ -81,7 +78,10 @@ void UserManagmentForm::on_tableViewUser_clicked(const QModelIndex &index)
         QString decryptedData = LoginDialog::decrypt(data);
         ui->lineEditDecryptedPassword->setText(decryptedData);
     }
-
+    else
+    {
+        ui->lineEditDecryptedPassword->setText("");
+    }
 }
 
 void UserManagmentForm::on_tableViewAdmin_clicked(const QModelIndex &index)

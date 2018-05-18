@@ -6,8 +6,14 @@
 class User
 {
 public:
+    enum class Type
+    {
+        RegularUser,
+        Administrator
+    };
     explicit User(int id = -1, const QString &name = "",
-                  const QString &password ="");
+                  const QString &password ="",
+                  Type type = Type::RegularUser);
     int id() const;
     void setId(int id);
 
@@ -17,10 +23,14 @@ public:
     QString password() const;
     void setPassword(const QString &password);
 
+    Type type() const;
+    void setType(const Type &type);
+
 private:
     int mId;
     QString mName;
     QString mPassword;
+    Type mType;
 };
 
 #endif // USER_H

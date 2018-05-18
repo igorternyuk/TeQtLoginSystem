@@ -1,29 +1,25 @@
 #include "dbmanager.hpp"
+#include "loginDialog.hpp"
+#include <QVariant>
 #include <QSqlQuery>
 #include <QSqlError>
+#ifdef DEBUG
 #include <QDebug>
+#endif
 #include <stdexcept>
 
 DbManager::DbManager()
-{
-
-}
+{}
 
 bool DbManager::insertUser(const User &user)
 {
     QSqlQuery query;
     QString cmd = QString(SQL_INSERT_USER)
+            .arg(user.type() == User::Type::Administrator ? "admin" : "user")
             .arg(user.name()).arg(user.password());
+#ifdef DEBUG
     qDebug() << cmd;
-    return query.exec(cmd);
-}
-
-bool DbManager::insertAdmin(const User &user)
-{
-    QSqlQuery query;
-    QString cmd = QString(SQL_INSERT_ADMIN)
-            .arg(user.name()).arg(user.password());
-    qDebug() << cmd;
+#endif
     return query.exec(cmd);
 }
 
@@ -31,22 +27,24 @@ bool DbManager::checkIfUserExists(const User &user)
 {
     QSqlQuery query;
     QString cmd = QString(SQL_CHECK_IF_USER_EXISTS)
+            .arg(user.type() == User::Type::Administrator ? "admin" : "user")
             .arg(user.name());
+#ifdef DEBUG
+    qDebug() << cmd;
+#endif
     query.exec(cmd);
-    query.next();
-    const int count = query.value(0).toInt();
-    return count > 0;
-}
-
-bool DbManager::checkIfAdminExists(const User &user)
-{
-    QSqlQuery query;
-    QString cmd = QString(SQL_CHECK_IF_ADMIN_EXISTS)
-            .arg(user.name());
-    query.exec(cmd);
-    query.next();
-    const int count = query.value(0).toInt();
-    return count > 0;
+    bool userFound = false;
+    while(query.next())
+    {
+        QString encryptedPassword = query.value(2).toString();
+        QString decryptedPassword = LoginDialog::decrypt(encryptedPassword);
+        if(user.password() == decryptedPassword)
+        {
+            userFound = true;
+            break;
+        }
+    }
+    return userFound;
 }
 
 int DbManager::countAdmins()
@@ -55,6 +53,11 @@ int DbManager::countAdmins()
     query.exec(SQL_COUNT_ADMINS);
     query.next();
     return query.value(0).toInt();
+}
+
+QString DbManager::getLastError() const
+{
+    return mDb.lastError().text();
 }
 
 

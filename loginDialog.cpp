@@ -4,16 +4,17 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QCheckBox>
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
-LoginDialog::LoginDialog(DbManager manager, QWidget *parent) :
+LoginDialog::LoginDialog(DbManager &manager, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog),
     mDbManager(manager)
 {
     ui->setupUi(this);
     ui->lineEditUserPassword->setEchoMode(QLineEdit::Password);
-
     checkIfAdminExists();
 }
 
@@ -24,38 +25,21 @@ LoginDialog::~LoginDialog()
 
 void LoginDialog::on_buttonBox_accepted()
 {
-    bool isAdmin = ui->radioBtnAdministrator->isChecked();
-    QSqlQuery query;
     User user(-1, ui->lineEditUsername->text(),
               ui->lineEditUserPassword->text());
-    QString cmd = QString("SELECT * FROM %1 WHERE name LIKE '%2'")
-            .arg(isAdmin ? "admin" : "user")
-            .arg(user.name());
-    qDebug() << cmd;
-    query.exec(cmd);
-    bool userFound = false;
-    qDebug() << "Checking all results...";
-    while(query.next())
+    bool isAdmin = ui->radioBtnAdministrator->isChecked();
+    if(isAdmin)
     {
-        QString encryptedPassword = query.value(2).toString();
-        qDebug() << "encryptedPassword = " << encryptedPassword;
-        QString decryptedPassword = LoginDialog::decrypt(encryptedPassword);
-        qDebug() << "decryptedPassword = " << decryptedPassword;
-        if(user.password() == decryptedPassword)
-        {
-            userFound = true;
-            break;
-        }
-        qDebug() << "Password mismatch";
+        user.setType(User::Type::Administrator);
     }
-    if(!userFound)
+
+    if(!mDbManager.checkIfUserExists(user))
     {
         QMessageBox::warning(this, "Authentication error",
                              "Incorrect username or password");
         reject();
         return;
     }
-    qDebug() << "User found";
     mLoginType = isAdmin ? LoginType::Administrator : LoginType::RegularUser;
     accept();
 }
@@ -67,30 +51,34 @@ void LoginDialog::on_buttonBox_rejected()
 
 void LoginDialog::on_btnRegisterAdmin_clicked()
 {
-    qDebug() << "Registering the new admin";
     RegisterUserDialog dialog;
     dialog.getIsAdminCheckBox()->setChecked(true);
     dialog.getIsAdminCheckBox()->setEnabled(false);
     if(dialog.exec() == RegisterUserDialog::Accepted)
     {
-        qDebug() << "Accepted";
         User user = dialog.getUser();
         QString userpass = user.password();
-        qDebug() << "Admin password: " << userpass;
         QString encryptedUserPass = LoginDialog::encrypt(userpass);
-        qDebug() << "Encrypted admin password: " << encryptedUserPass;
-        QSqlQuery query;
-        QString cmd = QString("INSERT INTO admin (name, password) VALUES('%1', '%2');")
-                .arg(user.name()).arg(encryptedUserPass);
-        qDebug() << cmd;
-        query.exec(cmd);
+        user.setPassword(encryptedUserPass);
+        user.setType(User::Type::Administrator);
+        if(mDbManager.insertUser(user))
+        {
+            QMessageBox::information(this, "Success",
+                                     "New admin was successfully registered");
+        }
+        else
+        {
+            QMessageBox::critical(this, "Failure",
+                                  "Could not insert new admin: "
+                                  + mDbManager.getLastError());
+        }
         checkIfAdminExists();
     }
 }
 
 QString LoginDialog::getPassword()
 {
-    return QString("Parol Na Gorshke Sidel Korol");
+    return QString("Un gitano loco me dije: Los caballos tocan la guitarra muy bien!!!");
 }
 
 QString LoginDialog::encrypt(const QString &text)
@@ -124,13 +112,7 @@ LoginDialog::LoginType LoginDialog::getLoginType() const
 
 void LoginDialog::checkIfAdminExists()
 {
-    QSqlQuery query;
-    query.exec("SELECT count(*) from admin");
-    query.next();
-    const int adminCount = query.value(0).toInt();
-    qDebug() << "Checking if admin already exists";
-    qDebug() << "adminCount " << adminCount;
-    if(adminCount == 0)
+    if(mDbManager.countAdmins() == 0)
     {
         ui->btnRegisterAdmin->setEnabled(true);
     }

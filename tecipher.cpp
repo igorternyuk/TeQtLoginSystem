@@ -26,10 +26,7 @@ bool TeCipher::loadPublicKeyByteArrayFromFile(const QString &pathToPublicKeyFile
         return false;
     }
 
-    //qDebug() << "File " << pathToPublicKeyFile << " opened";
     mPublicKey = fi.readAll();
-    //qDebug() << "Loaded public key:";
-    //qDebug() << mPublicKey;
     fi.close();
     return true;
 }
@@ -44,10 +41,7 @@ bool TeCipher::loadPrivateKeyByteArrayFromFile(const QString &pathToPrivateKeyFi
         return false;
     }
 
-    //qDebug() << "File " << pathToPrivateKeyFile << " opened";
     mPrivateKey = fi.readAll();
-    //qDebug() << "Loaded private key:";
-    //qDebug() << mPrivateKey;
     fi.close();
     return true;
 }
@@ -56,7 +50,6 @@ bool TeCipher::loadPrivateKeyByteArrayFromFile(const QString &pathToPrivateKeyFi
 RSA *TeCipher::getPublicRSAKey(QByteArray &data)
 {
     const char* publicKeyStr = data.constData();
-    //qDebug() << publicKeyStr;
     BIO* bio = BIO_new_mem_buf((void*)publicKeyStr, -1);
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
     RSA* rsaPubKey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
@@ -80,7 +73,6 @@ RSA *TeCipher::getPublicRSAKey(QString &filename)
 RSA *TeCipher::getPrivateRSAKey(QByteArray &data)
 {
     const char* privateKeyStr = data.constData();
-    //qDebug() << privateKeyStr;
     BIO* bio = BIO_new_mem_buf((void*)privateKeyStr, -1);
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
     RSA* rsaPrivKey = PEM_read_bio_RSAPrivateKey(bio, NULL, NULL, NULL);
@@ -424,7 +416,7 @@ bool TeCipher::encryptPlainTextWithCombinedMethod(const QString &password,
         qCritical() << "Could not encrypt";
         return false;
     }
-    qDebug() << "encryptedData:" << encryptedData;
+    //qDebug() << "encryptedData:" << encryptedData;
     encryptedText.clear();
     encryptedText.append(encryptedData.toBase64());
     return true;
@@ -457,12 +449,12 @@ bool TeCipher::encryptFileWithCombinedMethod(const QString &password,
                                              const QString &pathToInputFile,
                                              const QString &pathToOutputFile)
 {
-    qDebug() << "Encryption...";
+    //qDebug() << "Encryption...";
     QByteArray passphrase;
     passphrase.append(password);
     QByteArray inputData;
     readFile(pathToInputFile, inputData);
-    qDebug() << "Input data: " << inputData;
+    //qDebug() << "Input data: " << inputData;
     QByteArray encryptedData;
 
     if(!encryptWithCombinedMethod(passphrase, inputData, encryptedData))
@@ -470,7 +462,7 @@ bool TeCipher::encryptFileWithCombinedMethod(const QString &password,
         qCritical() << "Encryption error: " << getLastError();
         return false;
     }
-    qDebug() << "Encrypted data: " << encryptedData;
+    //qDebug() << "Encrypted data: " << encryptedData;
 
     if(!writeFile(pathToOutputFile, encryptedData))
     {
@@ -484,12 +476,12 @@ bool TeCipher::decryptFileWithCombinedMethod(const QString &password,
                                              const QString &pathToInputFile,
                                              const QString &pathToOutputFile)
 {
-    qDebug() << "Decryption...";
+    //qDebug() << "Decryption...";
     QByteArray passphrase;
     passphrase.append(password);
     QByteArray inputData;
     readFile(pathToInputFile, inputData);
-    qDebug() << "Encrypted data: " << inputData;
+    //qDebug() << "Encrypted data: " << inputData;
     QByteArray decryptedData;
     if(!decryptWithCombinedMethod(passphrase, inputData, decryptedData))
     {
@@ -502,7 +494,7 @@ bool TeCipher::decryptFileWithCombinedMethod(const QString &password,
         qCritical() << "Could not write the output file: " << getLastError();
         return false;
     }
-    qDebug() << "decryptedData: " << decryptedData;
+    //qDebug() << "decryptedData: " << decryptedData;
     return true;
 }
 

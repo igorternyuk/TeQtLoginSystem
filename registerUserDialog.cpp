@@ -32,6 +32,9 @@ void RegisterUserDialog::on_buttonBox_accepted()
     mUser.setId(1);
     mUser.setName(ui->lineEditName->text());
     mUser.setPassword(ui->lineEditPassword->text());
+    mUser.setType(ui->checkBoxIsAdmin->isChecked()
+                  ? User::Type::Administrator
+                  : User::Type::RegularUser);
     if(ui->lineEditPassword->text() != ui->lineEditRepeatPassword->text())
     {
         QMessageBox::critical(this, "Password error", "Password mismatch");

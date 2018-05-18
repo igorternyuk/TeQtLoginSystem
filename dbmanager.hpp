@@ -2,7 +2,6 @@
 #define DBMANAGER_H
 
 #include "user.hpp"
-#include "admin.hpp"
 #include <QSqlDatabase>
 #include <QString>
 
@@ -13,10 +12,9 @@ public:
     void createDatabase();
     void configureDatabase();
     bool insertUser(const User &user);
-    bool insertAdmin(const User &user);
     bool checkIfUserExists(const User &user);
-    bool checkIfAdminExists(const User &user);
     int countAdmins();
+    QString getLastError() const;
 private:
     const QString DB_DRIVER = "QSQLITE";
     const QString DB_NAME = "./data.db";
@@ -28,15 +26,11 @@ private:
                                            " (id INTEGER PRIMARY KEY AUTOINCREMENT"
                                            " NOT NULL, name TEXT NOT NULL UNIQUE,"
                                            " password TEXT NOT NULL);";
-    const QString SQL_INSERT_ADMIN = "INSERT INTO admin (name, password)"
-                                     " VALUES('%1', '%2');";
-    const QString SQL_INSERT_USER = "INSERT INTO user (name, password)"
-                                     " VALUES('%1', '%2');";
+    const QString SQL_INSERT_USER = "INSERT INTO %1 (name, password)"
+                                     " VALUES('%2', '%3');";
     const QString SQL_COUNT_ADMINS = "SELECT count(*) from admin";
-    const QString SQL_CHECK_IF_USER_EXISTS = "SELECT count(*) from user WHERE"
-                                             " name LIKE '%1'";
-    const QString SQL_CHECK_IF_ADMIN_EXISTS = "SELECT count(*) from admin WHERE"
-                                              " name LIKE '%1'";
+    const QString SQL_CHECK_IF_USER_EXISTS = "SELECT * FROM %1 WHERE"
+                                             " name LIKE '%2'";
     QSqlDatabase mDb;
 
 };

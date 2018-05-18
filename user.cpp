@@ -1,6 +1,6 @@
 #include "user.hpp"
 
-User::User(int id, const QString &name, const QString &password):
+User::User(int id, const QString &name, const QString &password, Type type):
     mId(id), mName(name), mPassword(password)
 {}
 
@@ -32,4 +32,14 @@ QString User::password() const
 void User::setPassword(const QString &password)
 {
     mPassword = password;
+}
+
+User::Type User::type() const
+{
+    return mType;
+}
+
+void User::setType(const Type &type)
+{
+    mType = type;
 }

@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    MainWindow window(loginDialog.getLoginType());
+    MainWindow window(manager, loginDialog.getLoginType());
     window.move(QApplication::desktop()->rect().center() - window.rect().center());
     window.show();
     return app.exec();
