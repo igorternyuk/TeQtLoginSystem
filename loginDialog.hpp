@@ -24,7 +24,9 @@ public:
     ~LoginDialog();
 
     LoginType getLoginType() const;
-    QString getPassword() const;
+    static QString getPassword();
+    static QString encrypt(const QString &text);
+    static QString decrypt(const QString &text);
 
 private slots:
     void on_buttonBox_accepted();
@@ -33,7 +35,6 @@ private slots:
 
 private:
     Ui::Dialog *ui;
-    TeCipher mCipher;
     LoginType mLoginType;
     DbManager mDbManager;
     //const QString mPassword = "Parol Na Gorshke Sidel Korol";

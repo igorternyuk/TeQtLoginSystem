@@ -1,5 +1,6 @@
 #include "usermanagmentform.hpp"
 #include "ui_usermanagmentform.h"
+#include "loginDialog.hpp"
 #include "registerUserDialog.hpp"
 #include <QCheckBox>
 #include <QMessageBox>
@@ -7,6 +8,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+
+#define PASSWORD_COLUMN 2
 
 UserManagmentForm::UserManagmentForm(QWidget *parent) :
     QWidget(parent),
@@ -47,12 +50,14 @@ void UserManagmentForm::on_btnRegister_clicked()
     {
         qDebug() << "Accepted";
         User user = dialog.getUser();
+        QString userpassword = user.password();
+        QString encryptedPassword = LoginDialog::encrypt(userpassword);
         QSqlQuery query;
         QString cmd = QString("INSERT INTO %1 (name, password) VALUES('%2', '%3');")
                 .arg(dialog.getIsAdminCheckBox()->isChecked()
                      ? "admin" : "user")
                 .arg(user.name())
-                .arg(user.password());
+                .arg(encryptedPassword);
         qDebug() << cmd;
         if(query.exec(cmd))
         {
@@ -70,12 +75,18 @@ void UserManagmentForm::on_btnRegister_clicked()
 
 void UserManagmentForm::on_tableViewUser_clicked(const QModelIndex &index)
 {
+    QString data = index.data().toString();
+    if(index.column() == PASSWORD_COLUMN)
+    {
+        QString decryptedData = LoginDialog::decrypt(data);
+        ui->lineEditDecryptedPassword->setText(decryptedData);
+    }
 
 }
 
 void UserManagmentForm::on_tableViewAdmin_clicked(const QModelIndex &index)
 {
-
+    on_tableViewUser_clicked(index);
 }
 
 void UserManagmentForm::on_action_remove_user_triggered()

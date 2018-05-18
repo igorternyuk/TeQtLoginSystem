@@ -2,6 +2,7 @@
 #include "loginDialog.hpp"
 #include "mainwindow.hpp"
 #include <QApplication>
+#include <QDesktopWidget>
 #include <QDebug>
 #include <stdexcept>
 
@@ -22,14 +23,13 @@ int main(int argc, char *argv[])
     app.setStyle("fusion");
 
     LoginDialog loginDialog(manager);
-
     if(loginDialog.exec() == LoginDialog::Rejected)
     {
         return 0;
     }
 
     MainWindow window(loginDialog.getLoginType());
+    window.move(QApplication::desktop()->rect().center() - window.rect().center());
     window.show();
-
     return app.exec();
 }

@@ -134,7 +134,7 @@ public:
      * @return true if the encryption finished with success and false if it fails
      */
     bool encryptPlainTextWithCombinedMethod(const QString &password,
-                                            QString &textToEcrypt,
+                                            const QString &textToEcrypt,
                                             QString &encryptedText);
 
     /**
@@ -145,7 +145,7 @@ public:
      * @return true if the decryption finished with success and false if it fails
      */
     bool decryptPlainTextWithCombinedMethod(const QString &password,
-                                            QString &textToDecrypt,
+                                            const QString &textToDecrypt,
                                             QString &decryptedText);
 
     /**

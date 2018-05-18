@@ -27,7 +27,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QLineEdit" name="lineEdit"/>
+          <widget class="QLineEdit" name="lineEditDecryptedPassword"/>
          </item>
          <item>
           <widget class="QLineEdit" name="lineEditSearchUser"/>

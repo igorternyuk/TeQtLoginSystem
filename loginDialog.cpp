@@ -14,9 +14,6 @@ LoginDialog::LoginDialog(DbManager manager, QWidget *parent) :
     ui->setupUi(this);
     ui->lineEditUserPassword->setEchoMode(QLineEdit::Password);
 
-    mCipher.loadPublicKeyByteArrayFromFile("public.pem");
-    mCipher.loadPrivateKeyByteArrayFromFile("private.pem");
-
     checkIfAdminExists();
 }
 
@@ -27,58 +24,39 @@ LoginDialog::~LoginDialog()
 
 void LoginDialog::on_buttonBox_accepted()
 {
-
-    if(ui->radioBtnRegularUser->isChecked())
+    bool isAdmin = ui->radioBtnAdministrator->isChecked();
+    QSqlQuery query;
+    User user(-1, ui->lineEditUsername->text(),
+              ui->lineEditUserPassword->text());
+    QString cmd = QString("SELECT * FROM %1 WHERE name LIKE '%2'")
+            .arg(isAdmin ? "admin" : "user")
+            .arg(user.name());
+    qDebug() << cmd;
+    query.exec(cmd);
+    bool userFound = false;
+    qDebug() << "Checking all results...";
+    while(query.next())
     {
-        QSqlQuery query;
-        User user(-1, ui->lineEditUsername->text(),
-                  ui->lineEditUserPassword->text());
-        QString cmd = QString("SELECT count(*) from user WHERE"
-                              " name LIKE '%1'")
-                .arg(user.name()).arg(user.password());
-        query.exec(cmd);
-        query.next();
-        const int count = query.value(0).toInt();
-        if(count == 0)
+        QString encryptedPassword = query.value(2).toString();
+        qDebug() << "encryptedPassword = " << encryptedPassword;
+        QString decryptedPassword = LoginDialog::decrypt(encryptedPassword);
+        qDebug() << "decryptedPassword = " << decryptedPassword;
+        if(user.password() == decryptedPassword)
         {
-            QMessageBox::warning(this, "Authentication error",
-                                 "Incorrect username or password");
-            reject();
-            return;
+            userFound = true;
+            break;
         }
-        mLoginType = LoginType::RegularUser;
+        qDebug() << "Password mismatch";
     }
-    else if(ui->radioBtnAdministrator->isChecked())
+    if(!userFound)
     {
-        QSqlQuery query;
-        User user(-1, ui->lineEditUsername->text(),
-                    ui->lineEditUserPassword->text());
-        QString cmd = QString("SELECT count(*) from admin WHERE"
-                              " name LIKE '%1' AND password LIKE '%2'")
-                .arg(user.name()).arg(user.password());
-        query.exec(cmd);
-        query.next();
-        const int adminCount = query.value(0).toInt();
-        if(adminCount == 0)
-        {
-            QMessageBox::warning(this, "Authentication error",
-                                 "Incorrect username or password");
-            reject();
-            return;
-        }
-        mLoginType = LoginType::Administrator;
+        QMessageBox::warning(this, "Authentication error",
+                             "Incorrect username or password");
+        reject();
+        return;
     }
-
-    if(mLoginType == LoginType::RegularUser)
-    {
-        QMessageBox::information(this, "Success",
-                                 "You have entered as regular user");
-    }
-    else if(mLoginType == LoginType::Administrator)
-    {
-        QMessageBox::information(this, "Success",
-                                 "You have entered as administrator");
-    }
+    qDebug() << "User found";
+    mLoginType = isAdmin ? LoginType::Administrator : LoginType::RegularUser;
     accept();
 }
 
@@ -98,19 +76,45 @@ void LoginDialog::on_btnRegisterAdmin_clicked()
         qDebug() << "Accepted";
         User user = dialog.getUser();
         QString userpass = user.password();
-
+        qDebug() << "Admin password: " << userpass;
+        QString encryptedUserPass = LoginDialog::encrypt(userpass);
+        qDebug() << "Encrypted admin password: " << encryptedUserPass;
         QSqlQuery query;
         QString cmd = QString("INSERT INTO admin (name, password) VALUES('%1', '%2');")
-                .arg(user.name()).arg(user.password());
+                .arg(user.name()).arg(encryptedUserPass);
         qDebug() << cmd;
         query.exec(cmd);
         checkIfAdminExists();
     }
 }
 
-QString LoginDialog::getPassword() const
+QString LoginDialog::getPassword()
 {
     return QString("Parol Na Gorshke Sidel Korol");
+}
+
+QString LoginDialog::encrypt(const QString &text)
+{
+    TeCipher cipher;
+    cipher.loadPublicKeyByteArrayFromFile("public.pem");
+    cipher.loadPrivateKeyByteArrayFromFile("private.pem");
+    QString password = getPassword();
+    QString encryptedText;
+    cipher.encryptPlainTextWithCombinedMethod(password, text,
+                                               encryptedText);
+    return encryptedText;
+}
+
+QString LoginDialog::decrypt(const QString &text)
+{
+    TeCipher cipher;
+    cipher.loadPublicKeyByteArrayFromFile("public.pem");
+    cipher.loadPrivateKeyByteArrayFromFile("private.pem");
+    QString password = getPassword();
+    QString decryptedText;
+    cipher.decryptPlainTextWithCombinedMethod(password, text,
+                                               decryptedText);
+    return decryptedText;
 }
 
 LoginDialog::LoginType LoginDialog::getLoginType() const
@@ -134,5 +138,4 @@ void LoginDialog::checkIfAdminExists()
     {
         ui->btnRegisterAdmin->setEnabled(false);
     }
-
 }

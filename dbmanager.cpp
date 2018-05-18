@@ -31,7 +31,7 @@ bool DbManager::checkIfUserExists(const User &user)
 {
     QSqlQuery query;
     QString cmd = QString(SQL_CHECK_IF_USER_EXISTS)
-            .arg(user.name()).arg(user.password());
+            .arg(user.name());
     query.exec(cmd);
     query.next();
     const int count = query.value(0).toInt();
@@ -42,7 +42,7 @@ bool DbManager::checkIfAdminExists(const User &user)
 {
     QSqlQuery query;
     QString cmd = QString(SQL_CHECK_IF_ADMIN_EXISTS)
-            .arg(user.name()).arg(user.password());
+            .arg(user.name());
     query.exec(cmd);
     query.next();
     const int count = query.value(0).toInt();
