@@ -1,7 +1,7 @@
 #ifndef REGISTERADMINDIALOG_HPP
 #define REGISTERADMINDIALOG_HPP
 
-#include "admin.hpp"
+#include "user.hpp"
 #include <QDialog>
 
 namespace Ui
@@ -9,23 +9,24 @@ namespace Ui
     class RegisterAdminDialog;
 }
 
-class RegisterAdminDialog : public QDialog
+class QCheckBox;
+class RegisterUserDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit RegisterAdminDialog(QWidget *parent = nullptr);
-    ~RegisterAdminDialog();
+    explicit RegisterUserDialog(QWidget *parent = nullptr);
+    ~RegisterUserDialog();
 
-    Admin admin() const;
+    User getUser() const;
+    QCheckBox* getIsAdminCheckBox() const;
 
 private slots:
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
 
 private:
-    Admin mAdmin;
+    User mUser;
     Ui::RegisterAdminDialog *ui;
 };
 

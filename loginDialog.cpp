@@ -1,13 +1,15 @@
-#include "dialog.hpp"
+#include "loginDialog.hpp"
 #include "ui_dialog.h"
-#include "registerAdminDialog.hpp"
+#include "registerUserDialog.hpp"
 #include <QSqlQuery>
 #include <QMessageBox>
+#include <QCheckBox>
 #include <QDebug>
 
-Dialog::Dialog(QWidget *parent) :
+LoginDialog::LoginDialog(DbManager manager, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Dialog)
+    ui(new Ui::Dialog),
+    mDbManager(manager)
 {
     ui->setupUi(this);
     ui->lineEditUserPassword->setEchoMode(QLineEdit::Password);
@@ -18,12 +20,12 @@ Dialog::Dialog(QWidget *parent) :
     checkIfAdminExists();
 }
 
-Dialog::~Dialog()
+LoginDialog::~LoginDialog()
 {
     delete ui;
 }
 
-void Dialog::on_buttonBox_accepted()
+void LoginDialog::on_buttonBox_accepted()
 {
 
     if(ui->radioBtnRegularUser->isChecked())
@@ -32,7 +34,7 @@ void Dialog::on_buttonBox_accepted()
         User user(-1, ui->lineEditUsername->text(),
                   ui->lineEditUserPassword->text());
         QString cmd = QString("SELECT count(*) from user WHERE"
-                              " name LIKE '%1' AND password LIKE '%2'")
+                              " name LIKE '%1'")
                 .arg(user.name()).arg(user.password());
         query.exec(cmd);
         query.next();
@@ -49,11 +51,11 @@ void Dialog::on_buttonBox_accepted()
     else if(ui->radioBtnAdministrator->isChecked())
     {
         QSqlQuery query;
-        Admin admin(-1, ui->lineEditUsername->text(),
+        User user(-1, ui->lineEditUsername->text(),
                     ui->lineEditUserPassword->text());
         QString cmd = QString("SELECT count(*) from admin WHERE"
                               " name LIKE '%1' AND password LIKE '%2'")
-                .arg(admin.name()).arg(admin.password());
+                .arg(user.name()).arg(user.password());
         query.exec(cmd);
         query.next();
         const int adminCount = query.value(0).toInt();
@@ -80,34 +82,43 @@ void Dialog::on_buttonBox_accepted()
     accept();
 }
 
-void Dialog::on_buttonBox_rejected()
+void LoginDialog::on_buttonBox_rejected()
 {
     reject();
 }
 
-void Dialog::on_btnRegisterAdmin_clicked()
+void LoginDialog::on_btnRegisterAdmin_clicked()
 {
     qDebug() << "Registering the new admin";
-    RegisterAdminDialog dialog;
-    if(dialog.exec() == RegisterAdminDialog::Accepted)
+    RegisterUserDialog dialog;
+    dialog.getIsAdminCheckBox()->setChecked(true);
+    dialog.getIsAdminCheckBox()->setEnabled(false);
+    if(dialog.exec() == RegisterUserDialog::Accepted)
     {
         qDebug() << "Accepted";
-        Admin admin = dialog.admin();
+        User user = dialog.getUser();
+        QString userpass = user.password();
+
         QSqlQuery query;
-        QString cmd = QString("INSERT INTO admin (1,'%1', '%2');")
-                .arg(admin.name()).arg(admin.password());
+        QString cmd = QString("INSERT INTO admin (name, password) VALUES('%1', '%2');")
+                .arg(user.name()).arg(user.password());
         qDebug() << cmd;
         query.exec(cmd);
         checkIfAdminExists();
     }
 }
 
-Dialog::LoginType Dialog::getLoginType() const
+QString LoginDialog::getPassword() const
+{
+    return QString("Parol Na Gorshke Sidel Korol");
+}
+
+LoginDialog::LoginType LoginDialog::getLoginType() const
 {
     return mLoginType;
 }
 
-void Dialog::checkIfAdminExists()
+void LoginDialog::checkIfAdminExists()
 {
     QSqlQuery query;
     query.exec("SELECT count(*) from admin");
@@ -115,13 +126,13 @@ void Dialog::checkIfAdminExists()
     const int adminCount = query.value(0).toInt();
     qDebug() << "Checking if admin already exists";
     qDebug() << "adminCount " << adminCount;
-    if(adminCount != 0)
+    if(adminCount == 0)
     {
-        ui->btnRegisterAdmin->setEnabled(false);
+        ui->btnRegisterAdmin->setEnabled(true);
     }
     else
     {
-        ui->btnRegisterAdmin->setEnabled(true);
+        ui->btnRegisterAdmin->setEnabled(false);
     }
 
 }

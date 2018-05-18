@@ -1,13 +1,15 @@
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
+#include "usermanagmentform.hpp"
+#include <QMdiSubWindow>
 #include <QMessageBox>
 
-MainWindow::MainWindow(Dialog::LoginType loginType, QWidget *parent)
+MainWindow::MainWindow(LoginDialog::LoginType loginType, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    if(loginType == Dialog::LoginType::Administrator)
+    if(loginType == LoginDialog::LoginType::Administrator)
     {
         ui->actionUser_database->setEnabled(true);
     }
@@ -15,6 +17,7 @@ MainWindow::MainWindow(Dialog::LoginType loginType, QWidget *parent)
     {
         ui->actionUser_database->setEnabled(false);
     }
+    this->setCentralWidget(ui->mdiArea);
 }
 
 MainWindow::~MainWindow()
@@ -24,7 +27,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionUser_database_triggered()
 {
-
+    UserManagmentForm *form = new UserManagmentForm(this);
+    auto subWindow = ui->mdiArea->addSubWindow(form);
+    subWindow->setGeometry(form->geometry());
+    subWindow->setWindowTitle(form->windowTitle());
+    subWindow->show();
 }
 
 void MainWindow::on_actionQuit_triggered()

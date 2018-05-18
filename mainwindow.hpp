@@ -2,7 +2,7 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include "dialog.hpp"
+#include "loginDialog.hpp"
 
 namespace Ui
 {
@@ -14,7 +14,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(Dialog::LoginType loginType,
+    explicit MainWindow(LoginDialog::LoginType loginType,
                         QWidget *parent = nullptr);
     ~MainWindow();
 

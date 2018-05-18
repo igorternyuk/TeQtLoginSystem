@@ -19,22 +19,26 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        dialog.cpp \
     tecipher.cpp \
-    registerAdminDialog.cpp \
     user.cpp \
     admin.cpp \
     dbmanager.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    usermanagmentform.cpp \
+    registerUserDialog.cpp \
+    loginDialog.cpp
 
-HEADERS  += dialog.hpp \
+HEADERS  += \
     tecipher.hpp \
-    registerAdminDialog.hpp \
     user.hpp \
     admin.hpp \
     dbmanager.hpp \
-    mainwindow.hpp
+    mainwindow.hpp \
+    usermanagmentform.hpp \
+    registerUserDialog.hpp \
+    loginDialog.hpp
 
 FORMS    += dialog.ui \
-    registerAdminDialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    usermanagmentform.ui \
+    registerUserDialog.ui
